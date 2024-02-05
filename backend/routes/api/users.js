@@ -1,6 +1,7 @@
 var express = require('express');
 var router = express.Router();
-
+let { randomUUID } = require('crypto'); //importera in unikt ID paket från npm
+const { ObjectId } = require('mongodb');
 
 
 
@@ -17,11 +18,11 @@ router.get('/', function(req, res) {
 });
 
 
-
+// Get specific user ID
 router.post("/", (req, res) => {
-  let userId = req.body.id;
+  const userId = req.body.id;
 
-  req.app.locals.db.collection("users").findOne({ id: userId })
+   req.app.locals.db.collection("users").findOne({ _id: new ObjectId(userId) })
     .then(ifIdExists => {
       // If user is found in MongoDB, send it in the response
       if (ifIdExists) {
@@ -34,6 +35,20 @@ router.post("/", (req, res) => {
     })
    
 });
+
+// CREATE USER
+router.post("/add", (req, res) => {
+
+  let user = req.body;
+  
+  req.app.locals.db.collection("users").insertOne(user)
+  .then(() => {
+    console.log(user);
+    res.json(user);
+  })
+  
+});
+
 
 
 
