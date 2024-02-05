@@ -2,6 +2,7 @@ var express = require('express');
 var router = express.Router();
 let { randomUUID } = require('crypto'); //importera in unikt ID paket från npm
 const { ObjectId } = require('mongodb');
+const { log, error } = require('console');
 
 
 
@@ -22,7 +23,8 @@ router.get('/', function(req, res) {
 router.post("/", (req, res) => {
   const userId = req.body.id;
 
-   req.app.locals.db.collection("users").findOne({ _id: new ObjectId(userId) })
+   req.app.locals.db.collection("users")
+   .findOne({ _id: new ObjectId(userId) })
     .then(ifIdExists => {
       // If user is found in MongoDB, send it in the response
       if (ifIdExists) {
@@ -36,7 +38,7 @@ router.post("/", (req, res) => {
    
 });
 
-// CREATE USER
+// CREATE NEW USER
 router.post("/add", (req, res) => {
 
   let user = req.body;
@@ -46,8 +48,29 @@ router.post("/add", (req, res) => {
     console.log(user);
     res.json(user);
   })
-  
 });
+
+
+// LOGIN USER
+router.post("/login", (req, res) => {
+
+  let correctPassword = req.body.password;
+  let correctEmail = req.body.email;
+  
+  req.app.locals.db.collection("users")
+  .findOne({ email: correctEmail, password: correctPassword })
+  .then(userLoggedIn => {
+    if (userLoggedIn) {
+      res.json(userLoggedIn);
+      console.log(userLoggedIn);
+    } else {
+      res.status(401).json({message: "Wrong username and/or password"});
+
+    } 
+  })
+ 
+});
+
 
 
 
