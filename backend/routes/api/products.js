@@ -1,5 +1,6 @@
 var express = require('express');
 var router = express.Router();
+const { ObjectId } = require('mongodb');
 
 /* GET users listing. */
 router.get('/', function(req, res, next) {
@@ -10,6 +11,27 @@ router.get('/', function(req, res, next) {
     res.send(result);    
   })
 });
+
+
+// GET product specific ID
+router.get("/:id", (req, res) => {
+  const productId = req.params.id;
+
+   req.app.locals.db.collection("products")
+   .findOne({ _id: new ObjectId(productId) })
+    .then(ifProductIdExists => {
+      // If user is found in MongoDB, send it in the response
+      if (ifProductIdExists) {
+        res.json(ifProductIdExists);
+      } else {
+        // If not found in MongoDB, return a 404 status
+        res.status(404).json({ message: "This product does not exist!" });
+       
+      }
+    })
+   
+});
+
 
 
 module.exports = router;
