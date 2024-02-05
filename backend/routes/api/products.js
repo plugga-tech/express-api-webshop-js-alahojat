@@ -32,6 +32,18 @@ router.get("/:id", (req, res) => {
    
 });
 
+// CREATE A NEW PRODUCT
+
+router.post("/add", (req, res) => {
+
+  let newProduct = req.body;
+  
+  req.app.locals.db.collection("products").insertOne(newProduct)
+  .then(() => {
+    console.log(newProduct);
+    res.json(newProduct);
+  })
+});
 
 
 module.exports = router;
