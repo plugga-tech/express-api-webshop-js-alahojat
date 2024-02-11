@@ -4,16 +4,13 @@ let { randomUUID } = require('crypto'); //importera in unikt ID paket från npm
 const { ObjectId } = require('mongodb');
 const { log, error } = require('console');
 
-
-
-/* GET users listing. */
+// Get all users
 router.get('/', function(req, res) {
 
   let projection = { password: 0};
 
   req.app.locals.db.collection("users").find({}, { projection: projection}).toArray()
   .then (result => {
-    console.log(result);
     res.send(result);    
   })
 });
@@ -26,32 +23,30 @@ router.post("/", (req, res) => {
    req.app.locals.db.collection("users")
    .findOne({ _id: new ObjectId(userId) })
     .then(ifIdExists => {
-      // If user is found in MongoDB, send it in the response
       if (ifIdExists) {
         res.json(ifIdExists);
       } else {
-        // If not found in MongoDB, return a 404 status
-        res.status(404).json({ message: "No such user in the database!" });
-       
+        res.status(404).json({ message: "This user does not exists!" });
       }
     })
-   
 });
 
-// CREATE NEW USER
+// Create a new user
 router.post("/add", (req, res) => {
-
   let user = req.body;
   
   req.app.locals.db.collection("users").insertOne(user)
   .then(() => {
-    console.log(user);
     res.json(user);
   })
+  .catch(error => {
+    console.error("Error inserting user:", error);
+    res.status(401).json({ error: "Unable to create new user" });
+  });
 });
 
 
-// LOGIN USER
+// Login specific user
 router.post("/login", (req, res) => {
 
   let correctPassword = req.body.password;
@@ -62,31 +57,12 @@ router.post("/login", (req, res) => {
   .then(userLoggedIn => {
     if (userLoggedIn) {
       res.json(userLoggedIn);
-      console.log(userLoggedIn);
     } else {
       res.status(401).json({message: "Wrong username and/or password"});
-
     } 
   })
- 
 });
-
-
-
 
 
 module.exports = router;
 
-
-/**
- * 
- *let printUserDataBase = "<div><h2>All users</h2>"
-
-for (user in result) {
-  printUserDataBase += "<div>" + result[user].name + "</div>"
-}
-
-printUserDataBase += "</div>"
- * 
- * 
- */
